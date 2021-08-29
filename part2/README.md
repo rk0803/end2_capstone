@@ -1,16 +1,16 @@
-BACKGROUND
+# BACKGROUND
 The AI Community, facing one of the most challenging tasks is to be able to train computers to think, read and write like human beings. This is what is called as Natural Language Processing, i.e to be able to process the natural language (rather than just programming language), just like humans do thereby trying to bridge the gap between humans and computers. These tasks can range from filling in the blanks, finding(classifying) the sentiments from plethora of text available in the form of reviews, tweets etc., giving relevant answers from world of information available out there (open domain) or from a specific domain (closed domain), etc. to summarizing the text etc. The list is unending. The objective is to be able to process the loads of information out there without getting overwhelmed and inundated, to be able to interact with computers without needing to learn anything specific(like a programming language). It should just as natural and close as interacting with another human being.
 
 The research and consequently development of tricks/techniques in this domain once focused on handling for specific tasks with specific models/frameworks etc. Today, (during the past two years mostly) powerful general-purpose language models are mushrooming which can be fine-tuned for a wide variety of different tasks. While promising, efforts to this point have applied these general-purpose models to tasks (such as sentiment analysis) for which a human could produce the solution without additional background knowledge. This is helpful in multiple ways. While a model with billions of parameters, can be pre-trained on a large (obscene) amount of data to ensure better learning, which can take huge amount of resources, it can be tweaked to a specific data/ purpose with 'handlable' amount of data and resources. 
 
 Hence the ensuing research, along with developing new and better frameworks, is also on the lines of how to 'tame' these models for specific tasks etc. This leads us to this capstone project as part of the END2 course at 'The School of AI'. The purpose of this capstone project is to build a closed domain question answering system.
 
-Preamble(for capstone project)
+# Preamble(for capstone project)
 
 We need three components to achieve this:
 
-A (pre-trained) generator model like BERT.
-A (pre-trained) retriever model like DPR.
+A (pre-trained) generator model like **BERT**.
+A (pre-trained) retriever model like **DPR**.
 An indexed KB of text documents (JSON, our dataset)
 This is how our architecture would look like:
 
