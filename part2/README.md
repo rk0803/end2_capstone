@@ -14,9 +14,10 @@ A (pre-trained) retriever model like **DPR**.
 An indexed KB of text documents (JSON, our dataset)
 This is how our architecture would look like:
 
-![img] Retrieval architecture.png
-we need to make our own bi-encoder and minimize this equation
-p(z∣x)∝exp(d(z)Tq(x))
+![image](https://user-images.githubusercontent.com/82941475/131240796-8ab81846-de2a-466c-9463-530a6b47a9e3.png)
+
+
+we need to make our own bi-encoder and minimize this equation <img src="https://render.githubusercontent.com/render/math?math=p(z|x) \propto e^{d(z)^Tq(x)}">
 
 Where  **d(z)** is the encoded document vector (i.e. CLS Token) coming from a pre-trained BERT1 model (never to be trained), **q(x)** is the encoded question vector (i.e. CLS Token) coming from a pre-trained BERT2 model (to be trained (fine-tuned)). We would not be training the Document encoder, this is to ensure that if new data is added to the system, there is no need to retrain it. But the question encoder needs to be trained, so as to minimize the loss and overall help in retrieval.
 Then we train one BERT model (fine-tuning a pre-trained BERT model) such that log likelihood of **p(z|x)** is minimized, i.e. siamese network, i.e. similarity network!
@@ -40,19 +41,24 @@ After that pre-trained seq2seq (BART) model is taken (trained as denoising auto-
 ## Architecture of the (proposed) Model
 The complete model is mix of a BERT (**Bidirectional Encoder Representations from Transformers**), and BART (**Bidirectional and Auto-Regressive Transformer**)
 The overview of the architecture would be like this (while we zoom into the details gradually):
-![img] architecture.png
+![image](https://user-images.githubusercontent.com/82941475/131241279-5c584fae-fdb7-4c7c-9c3c-40b992d31bd0.png)
+
 So as it can be seen, that there are two major modules in this model: Retriever and Generator. Lets first zoom into Retriever.
 ### Retriever:
 The image below shows an overview of the Retriever part:
-![img]retriever.png
+![image](https://user-images.githubusercontent.com/82941475/131241291-55f9d624-0d12-4c1b-8393-5a98ff455e6d.png)
+
 This is like a similarity network (or siamese network), where we are providing it with documents and queries, it retrieves the most relevant documents to the query. 
-![img] dpr1.png
+
+![image](https://user-images.githubusercontent.com/82941475/131241319-e1062970-fe61-48f0-84ea-a3a94eb9989a.png)
 
 Both the query and documents need to be encoded. So we have something like bi-encoder model which encodes the queries and documents, passes it to the similarity search, and trains the bi-encoder to retrieve top k (k to be provided) matching documents z, given the query x such that the probability p(z|x) is maximized.  This can be done through different appraoches. (Details are provided in implementation details.)
 These top k documents are then passed on to the generator model.
-### Generator:
-![img]generator.png
+
+![image](https://user-images.githubusercontent.com/82941475/131241323-039477b1-882d-4de8-8138-0a165a2b74b4.png)
+
  Generator, after getting the documents, along with the query, generates the answer to the query, maxmizing the probability p(y|x,z).
+ 
  ### Archtectural Details: [Justifications for each point is provided next]
  1. Bi-encoder uses two encoders, one for the query and one for the documents. We use BERT_{1} pre-trained model for query,  and a second BERT_{2} pre-trained model for document encoding. We fine-tune/update BERT_{1} encoder during the training process to facilitate the rerieval process i.e. maximizing the probability p(z|x) or minimizing the log-likelihood -log(z|x), for each z retrieved. We DO NOT update/fine-tune the document encoder BERT_{2} during training. Updating BERT_{2} also would mean continually updating the index as well, it becomes computationally expensive operation. Additionally, if we want to add more documents, we would need to re-train the whole document encoder again, another computationally intensive work.
  2. Similarity search here can be cosine similarity or any other vector similarity measure. But this again becomes compute intensive as similarity of the query vector with each of the document is calculated, ranked in decreasing order, and then top k are selected. Instead we use FAISS (Facebook AI Similarity Search), which is much faster. 
@@ -66,11 +72,18 @@ In the proposed model, we are going incrementally. We first train the bi-encoder
 
 ## Justifications:
 ### Why Bert:
+![image](https://user-images.githubusercontent.com/82941475/131241610-b8178cdb-85fb-40f7-8aac-4f50a24b771a.png)
+
 BERT is a transformers model pretrained on a large corpus of English data in a self-supervised fashion. This means it was pretrained on the raw texts only, with no humans labelling involved. More precisely, it was pretrained with two objectives:
-![img]mlm.png
+
+![image](https://user-images.githubusercontent.com/82941475/131241392-220d3664-78d4-47e6-a335-2684ea927167.png)
+
 Masked language modeling (MLM): taking a sentence, the model randomly masks 15% of the words in the input then run the entire masked sentence through the model and has to predict the masked words. It allows the model to learn a bidirectional representation of the sentence.
-![img]nsp.png
+
+![image](https://user-images.githubusercontent.com/82941475/131241384-2c43dfe7-2103-4a32-a4b5-d2c9ab31c16c.png)
+
 Next sentence prediction (NSP): the models concatenates two masked sentences as inputs during pretraining. Sometimes they correspond to sentences that were next to each other in the original text, sometimes not. The model then has to predict if the two sentences were following each other or not.
+
 Thus, the model can learn an inner representation of the English language that can then be used to extract features useful for downstream tasks, i.e. if you have a dataset of sentences (queries or documents in our case), you can use the features produced by the BERT model as inputs to further stages as required.
 
 ### Why FAISS,  and what is FAISS afterall?
@@ -101,7 +114,7 @@ BART is a denoising autoencoder for pretraining sequence-to-sequence models. BAR
 BART is pre-trained by minimizing the cross-entropy loss between the decoder output and the original sequence.
 We have seen that BERT is a bidirectional encoder, that it can see the full sequence before making a prediction.
 Auto regressive Models used for text generation, such as GPT2, are pre-trained to predict the next token given the previous sequence of tokens.
-
+![img] https://github.com/rk0803/end2_capstone/blob/main/part2/bart%20model.jpg
 BART has both an encoder (like BERT) and a decoder (like GPT), essentially getting the best of both worlds.
 The encoder uses a denoising objective similar to BERT while the decoder attempts to reproduce the original sequence (autoencoder), token by token, using the previous (uncorrupted) tokens and the output from the encoder.
 ![img]bart.png
