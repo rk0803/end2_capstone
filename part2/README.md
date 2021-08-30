@@ -38,7 +38,7 @@ After that pre-trained seq2seq (BART) model is taken (trained as denoising auto-
 - The objective is to solve the problem end to end. MUST have trained for over 500 EPOCHS in total (for all the models combined) and that the loss is reduced substantially from the starting point should be visible
 - The dataset must be split into 80/20 and the test accuracy must be highlighted in the readme file.The results on 100 randomly picked samples from the test dataset and the results must be shown in the following format: 	Question, 	Prediction, 	Exact Answer, 	Document
 
-## Architecture of the (proposed) Model
+# Architecture of the (proposed) Model
 The complete model is mix of a BERT (**Bidirectional Encoder Representations from Transformers**), and BART (**Bidirectional and Auto-Regressive Transformer**)
 The overview of the architecture would be like this (while we zoom into the details gradually):
 ![image](https://user-images.githubusercontent.com/82941475/131285918-9ebc13e1-4ff1-49af-9061-d14c5f1a9f84.png)
