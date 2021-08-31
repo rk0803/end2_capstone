@@ -27,7 +27,7 @@ Once the bi-encoder is ready to an acceptable level, all of JSON passages (Z) ar
 After that pre-trained seq2seq (BART) model is taken (trained as denoising auto-encoder). The the top k documents retrieved by FAISS are concatenated with the query (raw text) and fed to the BART encoder (The process can be started some pre-trained document summarization BART for both encoder-decoder as the starting weights). This is done to collect answers from multiple documents if required. The RAW TEXT of each document needs to be concatenated, pre-pended by the Question Query. The decoder then predict y, the answer!
 ### Points to be taken care of:
 1. The decoder can be trained EITHER to predict the exact sentence wanted, OR Some other sentence that is semantically similar to yours (although second one is desirable, and compare them using the document encoder outputs)
-2. While if the answer contains code, it should be ensured to predict exactly the same code. 
+2. If the answer contains code, it should be ensured to predict exactly the same code. 
 
 ### Additional training notes provided:
 
@@ -50,7 +50,7 @@ These top k documents are then passed on to the generator model.
 
 ### Generator
 
-Generator, after getting the documents, along with the query, generates the answer to the query, maximizing the probability p(y|x,z).
+Generator, after getting the documents, along with the query, generates the answer to the query, maximizing the probability p(y|x,z) or minimizing the log-likelihood of this probability. 
  
 
 **Retriever** | **Generator**
@@ -65,13 +65,17 @@ Retriever is like a similarity network (or siamese network), where we are provid
  ### Archtectural Details: [Justifications for each point is provided next]
  1. Bi-encoder uses two encoders, one for the query and one for the documents. We use BERT_{1} pre-trained model for query,  and a second BERT_{2} pre-trained model for document encoding. We fine-tune/update BERT_{1} encoder during the training process to facilitate the rerieval process i.e. maximizing the probability p(z|x) or minimizing the log-likelihood -log(z|x), for each z retrieved. We DO NOT update/fine-tune the document encoder BERT_{2} during training. Updating BERT_{2} also would mean continually updating the index as well, it becomes computationally expensive operation. Additionally, if we want to add more documents, we would need to re-train the whole document encoder again, another computationally intensive work.
  2. Similarity search here can be cosine similarity or any other vector similarity measure. But this again becomes compute intensive as similarity of the query vector with each of the document is calculated, ranked in decreasing order, and then top k are selected. Instead we use FAISS (Facebook AI Similarity Search), which is much faster. 
- 3. BART is used as the generator model. This takes as input the documents (passed on from retriever) concatenated together, pre-pended with the query, generates the answer token by token, minimizing the log-likelihood of p(y|x,z). Further mathematical (and implementation details are provided later) 
+ 3. BART is used as the generator model. This takes as input the documents (passed on from retriever) concatenated together, pre-pended with the query, generates the answer token by token, minimizing the log-likelihood of p(y|x,z). So this BART generator works as described below: 
+So e.g. three documents, z1, z2 and z3 get selected given the query x, maximizing the probability p(z|x). So now we have three latent documents for the query x : (x,z1), (x,z2) and (x,z3). Now, lets say BART model generates sequence for each of the latent documents, say, y11, y12 for z1, y21, y22 for z2 and y31, y32 for z3. Now we have 6 hypotheses to test. So we calculate the probability for each of these for each of the documents. So for example, for  y11, <img src="https://render.githubusercontent.com/render/math?math=p(y11|x)= \Sigma_{i=1}^3 p(y11|x,zi) \times  p(zi|x)  "> This is done for each yij, i=1,2,3 and j=1,2 to get the probability p(yij|x). Maximum value of this is returned.
+This whole process is depicted in the image below:
+
+![image](https://user-images.githubusercontent.com/82941475/131468248-9338f840-779f-442c-b2a5-589af548fc51.png)
 
 ## Difference from the RAG paper:
 In the RAG paper, the authors/developers of the model jointly train the retriever and generator components without any direct supervision on what
-document should be retrieved. Given a fine-tuning training corpus of input/output pairs (xj ; yj), minimizing the negative marginal log-likelihood of each target, (equation here) 
+document should be retrieved. Given a fine-tuning training corpus of input/output pairs (xj ; yj), minimizing the negative marginal log-likelihood of each target. 
 
-In the proposed model, we are going incrementally. We first train the bi-encoder. Once it is encoded to sufficiently desired level of accuracy, it is put to use to select the top k documents given the query. 
+In the proposed model, we are going incrementally. We first train the bi-encoder. Once it is encoded to sufficiently desired level of accuracy, it is put to use to select the top k documents given the query. These top k documents are then passed on the generator to select the one with maximum p(y|x,z).
 
 ## Justifications:
 ### Why Bert:
