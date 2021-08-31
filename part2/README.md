@@ -62,7 +62,7 @@ Retriever is like a similarity network (or siamese network), where we are provid
 
 ![image](https://user-images.githubusercontent.com/82941475/131241319-e1062970-fe61-48f0-84ea-a3a94eb9989a.png)
 
- ### Archtectural Details: [Justifications for each point is provided next]
+ ### Architectural Details: [Justifications for each point is provided next]
  1. Bi-encoder uses two encoders, one for the query and one for the documents. We use BERT_{1} pre-trained model for query,  and a second BERT_{2} pre-trained model for document encoding. We fine-tune/update BERT_{1} encoder during the training process to facilitate the rerieval process i.e. maximizing the probability p(z|x) or minimizing the log-likelihood -log(z|x), for each z retrieved. We DO NOT update/fine-tune the document encoder BERT_{2} during training. Updating BERT_{2} also would mean continually updating the index as well, it becomes computationally expensive operation. Additionally, if we want to add more documents, we would need to re-train the whole document encoder again, another computationally intensive work.
  2. Similarity search here can be cosine similarity or any other vector similarity measure. But this again becomes compute intensive as similarity of the query vector with each of the document is calculated, ranked in decreasing order, and then top k are selected. Instead we use FAISS (Facebook AI Similarity Search), which is much faster. 
  3. BART is used as the generator model. This takes as input the documents (passed on from retriever) concatenated together, pre-pended with the query, generates the answer token by token, minimizing the log-likelihood of p(y|x,z). So this BART generator works as described below: 
