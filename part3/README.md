@@ -58,7 +58,9 @@ epoch | Training loss | Test loss
 This model was then used for generating answers for the given questions. The predictions were done for test set, and bert score was calculated. </br>
 The bertscore reported is (hug_trans=4.10.2): **Precision = 0.825757,  Recall = 0.808534 and F1 Score = 0.816605100.** 
 
-A review of predictions (_/content/predictions.txt_) revealed that predictions could be better.
+Around 150 predictions with Question, Truth, and Predictions are available in the file _/content/predictions.txt_.
+
+A review of predictions  revealed that predictions could be better.
 
 ## Further Work and possible improvements
 
@@ -67,7 +69,8 @@ _There may be other aspects and features and solutions which can be explored and
 a) a better question encoder. Cleary if the question encoder was better trained (for 100 or more epochs), question encodings could have been better leading to better match of the documents retrieved from FAISS.</br>
 b) BART generator. If resources and could have permitted, the model could be trained for 2 or 3 epochs. (each epoch takes arounf 3 hours and more than the disk space available in colab pro. Some of the check-points were actually deleted while the training was going on to create space on the disk.)</br>
 c) Both the question encoder, BART generator together can be trained better for this overall work to be put to some use.</br>
-d) A better dataset</br>
+d) A better dataset. A look at the dataset questions and answers shows that if this could be better, perhaps a better question answering model could be created. </br>
+e) An important aspect which is not handled at present is, that when answer is example of code, the code should have been retrieved as it is. Definitely more work is needed there to handle that.
 
 ### Key Takeaway:
 Complete framework is ready and flow explained above in the image. The framework can be used on a different dataset and evaluated and also can be further trained.
